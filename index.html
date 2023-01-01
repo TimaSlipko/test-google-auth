@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Google Auth</title>
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<meta name="google-signin-client_id" content="58548281560-5smahn3mdto6gbhhjr29624aj2vi415d.apps.googleusercontent.com">
+
+	<script type="text/javascript">
+		function onSignIn(googleUser) {
+		  	var profile = googleUser.getBasicProfile();
+		  	console.log('Name: ' + profile.getName());
+			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+			console.log('Auth token: ' + googleUser.getAuthResponse().id_token);
+
+			document.getElementById('token').innerHTML = googleUser.getAuthResponse().id_token
+			document.getElementById('email').innerHTML = profile.getEmail()
+			document.getElementById('name').innerHTML = profile.getName()
+
+		}
+
+	  	function signOut() {
+		    var auth2 = gapi.auth2.getAuthInstance();
+		    auth2.signOut().then(function () {
+		      console.log('User signed out.');
+		      document.getElementById('token').innerHTML = ""
+		      document.getElementById('email').innerHTML = ""
+		      document.getElementById('name').innerHTML = ""
+		    });
+	  	}
+	</script>
+</head>
+<body>
+	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<br>
+	<div><a href="#" onclick="signOut();">Sign out</a></div>
+	<br><br><br>
+	<div><b>Email:</b> <p id = "email"></p></div>
+	<div><b>Name:</b> <p id = "name"></p></div>
+	<br><br>
+	<div><b>Auth token:</b><p id = "token"></p></div>
+</body>
+</html>
