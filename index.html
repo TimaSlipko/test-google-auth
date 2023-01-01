@@ -4,41 +4,62 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Google Auth</title>
-	<script src="https://apis.google.com/js/platform.js" async defer></script>
-	<meta name="google-signin-client_id" content="58548281560-5smahn3mdto6gbhhjr29624aj2vi415d.apps.googleusercontent.com">
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 	<script type="text/javascript">
 		function onSignIn(googleUser) {
-		  	var profile = googleUser.getBasicProfile();
-		  	console.log('Name: ' + profile.getName());
-			console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-			console.log('Auth token: ' + googleUser.getAuthResponse().id_token);
+			document.getElementById("auth-response").textContent = JSON.stringify(googleUser, undefined, 2);
+			document.getElementById("credential").textContent = googleUser.credential;
 
-			document.getElementById('token').innerHTML = googleUser.getAuthResponse().id_token
-			document.getElementById('email').innerHTML = profile.getEmail()
-			document.getElementById('name').innerHTML = profile.getName()
-
+			parsedJwt = parseJwt(googleUser.credential);
+			
+			document.getElementById("email").textContent = parsedJwt.email;
+			document.getElementById("name").textContent = parsedJwt.name;
+			
 		}
 
 	  	function signOut() {
-		    var auth2 = gapi.auth2.getAuthInstance();
-		    auth2.signOut().then(function () {
-		      console.log('User signed out.');
-		      document.getElementById('token').innerHTML = ""
-		      document.getElementById('email').innerHTML = ""
-		      document.getElementById('name').innerHTML = ""
-		    });
+			document.getElementById('auth-response').innerHTML = ""
+			document.getElementById('credential').innerHTML = ""
+			document.getElementById('name').innerHTML = ""
+			document.getElementById('email').innerHTML = ""
 	  	}
+
+		function copyTextToClipboard(elId) {
+			navigator.clipboard.writeText(document.getElementById(elId).innerHTML);
+		}
+
+		function parseJwt(token) {
+			var base64Url = token.split('.')[1];
+			var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+			var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+			}).join(''));
+
+			return JSON.parse(jsonPayload);
+		}
 	</script>
+	<style>
+		* {
+			font-family: Arial, Helvetica, sans-serif;
+		}
+	</style>
 </head>
 <body>
-	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<div id="g_id_onload"
+         data-client_id="169353275235-oquoqlebbi5cjr1qm41gmjr2pepf7p1n.apps.googleusercontent.com"
+         data-callback="onSignIn">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+	
 	<br>
 	<div><a href="#" onclick="signOut();">Sign out</a></div>
 	<br><br><br>
-	<div><b>Email:</b> <p id = "email"></p></div>
-	<div><b>Name:</b> <p id = "name"></p></div>
-	<br><br>
-	<div><b>Auth token:</b><p id = "token"></p></div>
+	<div style="width: 100%; overflow-wrap: break-word; cursor: pointer;" onclick="copyTextToClipboard('credential')"><b>Credential:</b> (click to copy)<br><h6 id = "credential"></h6></div>
+	<br><br><br>
+	<div style="width: 100%; overflow-wrap: break-word;"><b>Email:</b> <p id = "email"></p></div>
+	<div style="width: 100%; overflow-wrap: break-word;"><b>Name:</b> <p id = "name"></p></div>
+	<br><br><br>
+	<div style="width: 100%;"><b>Auth response:</b><br><pre style="white-space: pre-wrap;" id = "auth-response"></pre></div>
 </body>
 </html>
